@@ -129,5 +129,6 @@ class DAGLayer(nn.Module):
         )
         batch1.x[leaf_mask_1] = new_leaf_feature[:, : self.emb_dim]
         batch2.x[leaf_mask_2] = new_leaf_feature[:, self.emb_dim :]
-
+        batch1 = self.flow_backward(batch1)
+        batch2 = self.flow_backward(batch2)
         return batch1, batch2
