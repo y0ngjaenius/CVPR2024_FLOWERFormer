@@ -122,13 +122,14 @@ class DAGLayer(nn.Module):
     def forward(self, batch1, batch2):
         batch1 = self.flow_forward(batch1)
         batch2 = self.flow_forward(batch2)
-        leaf_mask_1 = ~index_to_mask(batch1.edge_index[0], batch1.num_nodes)
-        leaf_mask_2 = ~index_to_mask(batch2.edge_index[0], batch2.num_nodes)
-        new_leaf_feature = self.concat(
-            torch.cat([batch1.x[leaf_mask_1], batch2.x[leaf_mask_2]], dim=-1)
-        )
-        batch1.x[leaf_mask_1] = new_leaf_feature[:, : self.emb_dim]
-        batch2.x[leaf_mask_2] = new_leaf_feature[:, self.emb_dim :]
-        batch1 = self.flow_backward(batch1)
-        batch2 = self.flow_backward(batch2)
+        if self.bidirectional:
+            leaf_mask_1 = ~index_to_mask(batch1.edge_index[0], batch1.num_nodes)
+            leaf_mask_2 = ~index_to_mask(batch2.edge_index[0], batch2.num_nodes)
+            new_leaf_feature = self.concat(
+                torch.cat([batch1.x[leaf_mask_1], batch2.x[leaf_mask_2]], dim=-1)
+            )
+            batch1.x[leaf_mask_1] = new_leaf_feature[:, : self.emb_dim]
+            batch2.x[leaf_mask_2] = new_leaf_feature[:, self.emb_dim :]
+            batch1 = self.flow_backward(batch1)
+            batch2 = self.flow_backward(batch2)
         return batch1, batch2
