@@ -6,6 +6,7 @@ from torch_geometric.graphgym.models.layer import MLP, new_layer_config
 
 class GNNGraphHead(nn.Module):
     """
+    Reference: https://github.com/rampasek/GraphGPS
     GNN prediction head for graph prediction tasks.
     The optional post_mp layer (specified by cfg.gnn.post_mp) is used
     to transform the pooled embedding using an MLP.
@@ -17,9 +18,7 @@ class GNNGraphHead(nn.Module):
     def __init__(self, dim_in, dim_out, cfg):
         super().__init__()
         self.layer_post_mp = MLP(
-            new_layer_config(
-                dim_in, dim_out, cfg.gnn.layers_post_mp, has_act=False, has_bias=True, cfg=cfg
-            )
+            new_layer_config(dim_in, dim_out, cfg.gnn.layers_post_mp, has_act=False, has_bias=True, cfg=cfg)
         )
         self.pooling_fun = global_mean_pool
 

@@ -2,6 +2,8 @@ import torch
 
 
 class DummyEdgeEncoder(torch.nn.Module):
+    """Reference: https://github.com/rampasek/GraphGPS"""
+
     def __init__(self, emb_dim, cfg):
         super().__init__()
 

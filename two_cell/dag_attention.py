@@ -6,6 +6,10 @@ from torch_geometric.nn import MessagePassing
 
 
 class Attention(MessagePassing):
+    """
+    Reference: https://github.com/LUOyk1999/DAGformer
+    """
+
     def __init__(self, embed_dim, num_heads=8, dropout=0.0, bias=False, symmetric=False, **kwargs):
         super().__init__(node_dim=0, aggr="add")
         self.embed_dim = embed_dim

@@ -5,6 +5,10 @@ from torch_geometric.utils import softmax, index_to_mask
 
 
 class AttnConv(MessagePassing):
+    """
+    Reference: https://github.com/LUOyk1999/DAGformer
+    """
+
     def __init__(self, emb_dim, num_edge_attr=2, reverse_flow=False, dag_cfg=None):
         flow = "target_to_source" if reverse_flow else "source_to_target"
         super().__init__(aggr="add", flow=flow)

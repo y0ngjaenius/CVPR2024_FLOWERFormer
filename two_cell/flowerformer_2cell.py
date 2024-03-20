@@ -23,6 +23,10 @@ from edge_encoders import edge_encoder_dict
 
 
 class GPSLayer(nn.Module):
+    """
+    Minimal form of GPS layer (https://github.com/rampasek/GraphGPS) and modification for two-cell.
+    """
+
     def __init__(
         self,
         dim_h,
@@ -55,8 +59,7 @@ class GPSLayer(nn.Module):
             "BiasedTransformer",
         ]:
             raise NotImplementedError(
-                f"Logging of attention weights is not supported "
-                f"for '{global_model_type}' global attention model."
+                f"Logging of attention weights is not supported " f"for '{global_model_type}' global attention model."
             )
         self.attn_after_mpnn = dag_cfg.attn_after_mpnn
         self.ff = dag_cfg.ff
@@ -89,9 +92,7 @@ class GPSLayer(nn.Module):
         elif global_model_type == "DAG":
             self.self_attn = Attention(dim_h, num_heads, dropout=self.attn_dropout, bias=False)
         elif global_model_type == "Performer":
-            self.self_attn = SelfAttention(
-                dim=dim_h, heads=num_heads, dropout=self.attn_dropout, causal=False
-            )
+            self.self_attn = SelfAttention(dim=dim_h, heads=num_heads, dropout=self.attn_dropout, causal=False)
         else:
             raise ValueError(f"Unsupported global x-former model: " f"{global_model_type}")
         self.global_model_type = global_model_type
@@ -169,9 +170,7 @@ class GPSLayer(nn.Module):
             h_attn_1, h_attn_2 = self.dropout_attn(h_attn_1), self.dropout_attn(h_attn_2)
             h_attn_1, h_attn_2 = h_in1 + h_attn_1, h_in2 + h_attn_2
             if self.layer_norm:
-                h_attn_1, h_attn_2 = self.norm1_attn(h_attn_1, batch1.batch), self.norm1_attn(
-                    h_attn_2, batch2.batch
-                )
+                h_attn_1, h_attn_2 = self.norm1_attn(h_attn_1, batch1.batch), self.norm1_attn(h_attn_2, batch2.batch)
             if self.batch_norm:
                 h_attn_1, h_attn_2 = self.norm1_attn(h_attn_1), self.norm1_attn(h_attn_2)
             h1_out_list.append(h_attn_1)
@@ -252,9 +251,7 @@ class FeatureEncoder(torch.nn.Module):
             self.node_encoder = NodeEncoder(cfg.gnn.dim_inner, cfg)
             if cfg.dataset.node_encoder_bn:
                 self.node_encoder_bn = BatchNorm1dNode(
-                    new_layer_config(
-                        cfg.gnn.dim_inner, -1, -1, has_act=False, has_bias=False, cfg=cfg
-                    )
+                    new_layer_config(cfg.gnn.dim_inner, -1, -1, has_act=False, has_bias=False, cfg=cfg)
                 )
             # Update dim_in to reflect the new dimension of the node features
             self.dim_in = cfg.gnn.dim_inner
@@ -265,9 +262,7 @@ class FeatureEncoder(torch.nn.Module):
             self.edge_encoder = EdgeEncoder(cfg.gnn.dim_edge, cfg)
             if cfg.dataset.edge_encoder_bn:
                 self.edge_encoder_bn = BatchNorm1dNode(
-                    new_layer_config(
-                        cfg.gnn.dim_edge, -1, -1, has_act=False, has_bias=False, cfg=cfg
-                    )
+                    new_layer_config(cfg.gnn.dim_edge, -1, -1, has_act=False, has_bias=False, cfg=cfg)
                 )
 
     def forward(self, batch):
@@ -301,14 +296,10 @@ class GeneralLayer(nn.Module):
         layer_wrapper = []
         if has_bn:
             layer_wrapper.append(
-                nn.BatchNorm1d(
-                    layer_config.dim_out, eps=layer_config.bn_eps, momentum=layer_config.bn_mom
-                )
+                nn.BatchNorm1d(layer_config.dim_out, eps=layer_config.bn_eps, momentum=layer_config.bn_mom)
             )
         if layer_config.dropout > 0:
-            layer_wrapper.append(
-                nn.Dropout(p=layer_config.dropout, inplace=layer_config.mem_inplace)
-            )
+            layer_wrapper.append(nn.Dropout(p=layer_config.dropout, inplace=layer_config.mem_inplace))
         if layer_config.has_act:
             layer_wrapper.append(register.act_dict[layer_config.act]())
         self.post_layer = nn.Sequential(*layer_wrapper)
@@ -342,9 +333,7 @@ class GeneralMultiLayer(nn.Module):
 
     def __init__(self, name, layer_config: LayerConfig, **kwargs):
         super().__init__()
-        dim_inner = (
-            layer_config.dim_out if layer_config.dim_inner is None else layer_config.dim_inner
-        )
+        dim_inner = layer_config.dim_out if layer_config.dim_inner is None else layer_config.dim_inner
         for i in range(layer_config.num_layers):
             d_in = layer_config.dim_in if i == 0 else dim_inner
             d_out = layer_config.dim_out if i == layer_config.num_layers - 1 else dim_inner
@@ -376,9 +365,7 @@ def GNNPreMP(dim_in, dim_out, num_layers, cfg):
     """
     return GeneralMultiLayer(
         "linear",
-        layer_config=new_layer_config(
-            dim_in, dim_out, num_layers, has_act=False, has_bias=False, cfg=cfg
-        ),
+        layer_config=new_layer_config(dim_in, dim_out, num_layers, has_act=False, has_bias=False, cfg=cfg),
     )
 
 

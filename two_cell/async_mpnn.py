@@ -5,6 +5,10 @@ from torch_geometric.utils import softmax, index_to_mask
 
 
 class AttnConv(MessagePassing):
+    """
+    Reference: https://github.com/LUOyk1999/DAGformer
+    """
+
     def __init__(self, emb_dim, num_edge_attr=2, reverse_flow=False, dag_cfg=None):
         flow = "target_to_source" if reverse_flow else "source_to_target"
         super().__init__(aggr="add", flow=flow)
@@ -125,9 +129,7 @@ class DAGLayer(nn.Module):
         if self.bidirectional:
             leaf_mask_1 = ~index_to_mask(batch1.edge_index[0], batch1.num_nodes)
             leaf_mask_2 = ~index_to_mask(batch2.edge_index[0], batch2.num_nodes)
-            new_leaf_feature = self.concat(
-                torch.cat([batch1.x[leaf_mask_1], batch2.x[leaf_mask_2]], dim=-1)
-            )
+            new_leaf_feature = self.concat(torch.cat([batch1.x[leaf_mask_1], batch2.x[leaf_mask_2]], dim=-1))
             batch1.x[leaf_mask_1] = new_leaf_feature[:, : self.emb_dim]
             batch2.x[leaf_mask_2] = new_leaf_feature[:, self.emb_dim :]
             batch1 = self.flow_backward(batch1)
